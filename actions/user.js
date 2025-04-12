@@ -35,9 +35,9 @@ export async function updateUser(data) {
               industry: data.industry,
               salaryRanges: [], // Default empty array
               growthRate: 0, // Default zero growth
-              demandLevel: "Medium", // Default medium demand
+              demandLevel: "MEDIUM", // Default medium demand
               topSkills: [], // No top skills yet
-              marketOutlook: "Neutral", // Default outlook
+              marketOutlook: "NEUTRAL", // Default outlook
               keyTrends: [], // Default trends
               recommendedSkills: [], // Default recommended skills
               nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Next update in 7 days
@@ -67,7 +67,7 @@ export async function updateUser(data) {
     );
 
     // Return the updated user from the transaction result
-    return result.updatedUser; 
+    return {success : true, ...result}; 
   } catch (error) {
     console.error("Error updating user and industry:", error.message);
     throw new Error("Failed to update profile"); // Generic error message

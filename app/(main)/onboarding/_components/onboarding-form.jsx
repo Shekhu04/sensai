@@ -2,7 +2,7 @@
 // This directive ensures the component runs on the client side in a Next.js app (required when using hooks or browser-only code)
 
 import { onboardingSchema } from "@/app/lib/schema";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import useFetch from "@/hooks/use-fetch";
+import { updateUser } from "@/actions/user";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 // Component receives a prop 'industries' - an array of industry objects
 const OnboardingForm = ({ industries }) => {
@@ -32,6 +36,12 @@ const OnboardingForm = ({ industries }) => {
 
   // Router instance for navigation (can be used to redirect user after form submission)
   const router = useRouter();
+
+  const {
+    loading : updateLoading,
+    fn : updateUserFn,
+    data : updateResult
+  } = useFetch(updateUser)
 
   // Initialize the form using useForm hook with Zod validation schema
   const {
@@ -46,8 +56,25 @@ const OnboardingForm = ({ industries }) => {
 
   // Function that handles form submission
   const onSubmit = async (values) => {
-    console.log(values); // Log form values (can be replaced with an API call)
+    try {
+        const formattedIndustry = `${values.industry}-${values.subIndustry.toLowerCase().replace(/ /g, "-")}`;
+
+        await updateUserFn({
+            ...values,
+            industry : formattedIndustry,
+        })
+    } catch (error) {
+        console.error("Onboarding error:" , error);
+    }
   };
+
+  useEffect(() => {
+    if(updateResult?.success && !updateLoading) {
+        toast.success("Profile completed successfully!");
+        router.push("/dashboard");
+        router.refresh();
+    }
+  },[updateResult, updateLoading])
 
   // Watch the value of "industry" field to conditionally show "subIndustry"
   const watchIndustry = watch("industry");
@@ -178,8 +205,14 @@ const OnboardingForm = ({ industries }) => {
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full">
-              Complete Profile
+            <Button type="submit" className="w-full" disabled={updateLoading}>
+              {updateLoading ? (
+                <>
+                <Loader2 className="mr-2 h-2 w-4 animate-spin"/> Saving...
+                </>
+              ) : (
+                "Complete Profile"
+              )}
             </Button>
           </form>
         </CardContent>
