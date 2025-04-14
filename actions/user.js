@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server"; // Clerk authentication to get user ID
 import { db } from "@/lib/prisma"; // Prisma client for database operations
+import { generateAIInsights } from "./dashboard";
 
 // Function to update user profile and ensure industry insights exist
 export async function updateUser(data) {
@@ -30,19 +31,16 @@ export async function updateUser(data) {
 
         // Step 2: If industry doesn't exist, create it with default placeholder values
         if (!industryInsight) {
-          industryInsight = await tx.industryInsight.create({
-            data: {
-              industry: data.industry,
-              salaryRanges: [], // Default empty array
-              growthRate: 0, // Default zero growth
-              demandLevel: "MEDIUM", // Default medium demand
-              topSkills: [], // No top skills yet
-              marketOutlook: "NEUTRAL", // Default outlook
-              keyTrends: [], // Default trends
-              recommendedSkills: [], // Default recommended skills
-              nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Next update in 7 days
-            },
-          });
+          const insights = await generateAIInsights(data.industry.toLowerCase());
+                 industryInsight = await db.industryInsight.create({
+                   data: {
+                     industry: data.industry,
+                     ...insights,
+                     nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                     demandLevel: insights.demandLevel?.toUpperCase(), // → "HIGH"
+                     marketOutlook: insights.marketOutlook?.toUpperCase(), // → "POSITIVE"
+                   },
+                 });
         }
 
         // Step 3: Update the user's profile in the user table

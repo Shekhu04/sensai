@@ -82,7 +82,7 @@ model IndustryInsight {
   
   // Industry trends
   growthRate    Float     // Industry growth rate
-  demandLevel   DemanLevel   // "High", "Medium", "Low"
+  demandLevel   DemandLevel   // "High", "Medium", "Low"
   topSkills     String[]  // Most in-demand skills
   
   // Market conditions
@@ -98,7 +98,7 @@ model IndustryInsight {
   @@index([industry])
 }
 
-enum DemanLevel {
+enum DemandLevel {
   HIGH 
   MEDIUM 
   LOW
