@@ -14,3 +14,4 @@ export function entriesToMarkdown(entries, type) {
       .join("\n\n")
   );
 }
+/// Helper function to convert resume data to markdown
